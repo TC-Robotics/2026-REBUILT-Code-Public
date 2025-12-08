@@ -62,4 +62,4 @@ jobs:
       - name: Push public commit
         working-directory: code-public
         run: |
-          git push https://${{ steps.app-token.outputs.token }}@github.com/tc-robotics/2026-REBUILT-Code-Public.git main
+          git push https://github.com/tc-robotics/2026-REBUILT-Code-Public.git main
