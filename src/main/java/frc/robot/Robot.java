@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -30,6 +29,47 @@ public class Robot extends LoggedRobot {
    * initialization code.
    */
   public Robot() {
+    // Initialise all AdvantageKit logging, setting up constants.
+    Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+    Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+
+    // Check if the current git working tree is dirty
+    switch (BuildConstants.DIRTY) {
+      case 0:
+        Logger.recordMetadata("GitDirty","All changes committed");
+        break;
+      case 1:
+        Logger.recordMetadata("GitDirty","Uncommitted changes present");
+        break;
+      case 2:
+        Logger.recordMetadata("GitDirty", "Unknown");
+        break;
+    }
+
+    // Check whether we are simulating or running on a real robot, and configure logging based on that
+
+    switch (Constants.currentMode) {
+      case REAL:
+        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+      case SIM:
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+      case REPLAY:
+        setUseTiming(false);
+        String logPath = LogFileUtil.findReplayLog();
+        Logger.setReplaySource(new WPILOGReader(logPath));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        break;
+    }
+
+    // Start logging
+    Logger.start();
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
@@ -65,7 +105,7 @@ public class Robot extends LoggedRobot {
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
 
