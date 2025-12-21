@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
+// This Module class represents a single swerve drive module, handling its state and control.
+// It uses ModuleIO (which when this class is instantiated, is actually either the sim or a talonfx), and is used by the Drive class.
+
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;

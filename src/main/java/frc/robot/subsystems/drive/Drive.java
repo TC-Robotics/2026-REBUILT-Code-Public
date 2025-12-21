@@ -36,11 +36,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+// Swerve drive subsystem. Where all the main fun happens.
+
 public class Drive extends SubsystemBase {
     static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
             ? 250.0
             : 100.0;
 
+    // Used for creating a circle around the robot in which everything is contained, fulfilling all safety and boundary requirements.
+    // Useful for angular speed calculations, as it makes sure we don't exceed the max speed at any point on the robot.
     public static final double DRIVE_BASE_RADIUS = Math.max(
             Math.max(
                     Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),

@@ -35,15 +35,17 @@ import java.util.Queue;
 
 public class ModuleIOTalonFX implements ModuleIO {
     private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
-
+    // Create hardware objects
     private final TalonFX driveTalon;
     private final TalonFX turnTalon;
     private final CANcoder cancoder;
 
+    // Create Control requests
     private final VoltageOut voltageRequest = new VoltageOut(0.0);
     private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
     private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
 
+    // Create Control requests for FOC torque and position control (Phoenix Pro)
     private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
     private final PositionTorqueCurrentFOC positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0);
     private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest = new VelocityTorqueCurrentFOC(0.0);
