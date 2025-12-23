@@ -1,0 +1,216 @@
+{
+  "schema_version": "1",
+  "gear_ratio": 8.0,
+  "mass_kg": 5.0,
+  "drum_radius_m": 0.05,
+  "max_height_m": 2.0,
+  "motor_initial_configs": [
+    {
+      "name": "MotorOutput",
+      "params": [
+        {
+          "name": "NeutralMode",
+          "type": "NeutralModeValue",
+          "param_value": "Brake"
+        }
+      ]
+    },
+    {
+      "name": "CurrentLimits",
+      "params": [
+        {
+          "name": "StatorCurrentLimit",
+          "type": "double",
+          "units": "Amperes",
+          "param_value": 120.0
+        },
+        {
+          "name": "StatorCurrentLimitEnable",
+          "type": "bool",
+          "param_value": true
+        }
+      ]
+    }
+  ],
+  "leader_initial_configs": [
+    {
+      "name": "Feedback",
+      "params": [
+        {
+          "name": "SensorToMechanismRatio",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 8.0
+        }
+      ]
+    },
+    {
+      "name": "Slot0",
+      "params": [
+        {
+          "name": "kP",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 32.0
+        },
+        {
+          "name": "kI",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.0
+        },
+        {
+          "name": "kD",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.4
+        },
+        {
+          "name": "kS",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.2
+        },
+        {
+          "name": "kV",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.96
+        },
+        {
+          "name": "kA",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.0
+        },
+        {
+          "name": "kG",
+          "type": "double",
+          "units": "Scalar",
+          "param_value": 0.5
+        },
+        {
+          "name": "GravityType",
+          "type": "GravityTypeValue",
+          "param_value": "Elevator_Static"
+        }
+      ]
+    },
+    {
+      "name": "MotionMagic",
+      "params": [
+        {
+          "name": "MotionMagicCruiseVelocity",
+          "type": "double",
+          "units": "RotPerSec",
+          "param_value": 10.0
+        },
+        {
+          "name": "MotionMagicAcceleration",
+          "type": "double",
+          "units": "RotPerSecSq",
+          "param_value": 40.0
+        },
+        {
+          "name": "MotionMagicJerk",
+          "type": "double",
+          "units": "RotPerSecCu",
+          "param_value": 400.0
+        },
+        {
+          "name": "MotionMagicExpo_kV",
+          "type": "double",
+          "units": "VPerRotPerSec",
+          "param_value": 0.96
+        },
+        {
+          "name": "MotionMagicExpo_kA",
+          "type": "double",
+          "units": "VPerRotPerSecSq",
+          "param_value": 0.1
+        }
+      ]
+    },
+    {
+      "name": "SoftwareLimitSwitch",
+      "params": [
+        {
+          "name": "ReverseSoftLimitThreshold",
+          "type": "double",
+          "units": "Rotations",
+          "param_value": 0.0
+        },
+        {
+          "name": "ReverseSoftLimitEnable",
+          "type": "bool",
+          "param_value": true
+        }
+      ]
+    }
+  ],
+  "motor_controllers": [
+    {
+      "name": "leaderMotor",
+      "device": {
+        "id": 0,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": null,
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    },
+    {
+      "name": "followerMotor",
+      "device": {
+        "id": 1,
+        "model": "TalonFX",
+        "canbus": "canivore",
+        "configs": [
+          {
+            "name": "MotorOutput",
+            "params": [
+              {
+                "name": "Inverted",
+                "type": "InvertedValue",
+                "param_value": "CounterClockwise_Positive"
+              }
+            ]
+          }
+        ]
+      },
+      "leader": {
+        "name": "leaderMotor",
+        "motor_alignment": "Aligned"
+      },
+      "motor_arrangement": "TalonFx",
+      "orientation": "CounterClockwise_Positive"
+    }
+  ],
+  "setpoints": [
+    {
+      "name": "Ground",
+      "target_rot": 0.0
+    },
+    {
+      "name": "MidScore",
+      "target_m": 1.0
+    },
+    {
+      "name": "HighScore",
+      "target_m": 1.5
+    }
+  ]
+}
