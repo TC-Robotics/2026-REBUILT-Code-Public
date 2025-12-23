@@ -83,6 +83,7 @@ public class Module {
         state.optimize(currentAngle2d);
         state.cosineScale(currentAngle2d);
 
+        io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
         // Convert setpoint → Rotation3d
         io.setTurnPosition(
                 new Rotation3d(0.0, 0.0, state.angle.getRadians()));
