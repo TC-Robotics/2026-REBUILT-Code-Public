@@ -15,7 +15,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -49,22 +49,16 @@ public class Elevator extends SubsystemBase {
 
         private Setpoint(Angle target) {
             this.target = target;
-            this.targetDist = kDrumRadius.times(target.in(Radians));
+            this.targetDist = ElevatorConstants.kDrumRadius.times(target.in(Radians));
         }
         private Setpoint(Distance target) {
-            this.target = Radians.of(target.div(kDrumRadius).magnitude());
+            this.target = Radians.of(target.div(ElevatorConstants.kDrumRadius).magnitude());
             this.targetDist = target;
         }
     }
 
-    private static final int kNumConfigAttempts = 2;
-
-    private static final double kGearRatio = 8;
-    private static final Distance kDrumRadius = Meters.of(0.05);
-    private static final Distance kMaxHeight = Meters.of(2);
-
     /* leader and follower motors */
-    private final CANBus kCANBus = new CANBus("canivore");
+    private final CANBus kCANBus = ElevatorConstants.kCANBus;
     private final TalonFX leaderMotor = new TalonFX(0, kCANBus);
     private final TalonFX followerMotor = new TalonFX(1, kCANBus);
 
@@ -74,7 +68,7 @@ public class Elevator extends SubsystemBase {
     private final StatusSignal<Current> leaderMotorTorqueCurrent = leaderMotor.getTorqueCurrent(false);
 
     /* controls used by the leader motors */
-    private final MotionMagicVoltage setpointRequest = new MotionMagicVoltage(0);
+    private final MotionMagicExpoTorqueCurrentFOC setpointRequest = new MotionMagicExpoTorqueCurrentFOC(0);
     private final DutyCycleOut manualRequest = new DutyCycleOut(0);
     private final DutyCycleOut calibrationRequest = new DutyCycleOut(-0.1)
         .withIgnoreHardwareLimits(true)
@@ -89,16 +83,15 @@ public class Elevator extends SubsystemBase {
     /* simulation */
     private final ElevatorSim elevatorSim_leaderMotor = new ElevatorSim(
         DCMotor.getKrakenX60Foc(2),
-        kGearRatio, 5, kDrumRadius.in(Meters),
-        0.0, kMaxHeight.in(Meters), true, 0.0
+        ElevatorConstants.kGearRatio, 5, ElevatorConstants.kDrumRadius.in(Meters),
+        0.0, ElevatorConstants.kMaxHeight.in(Meters), true, 0.0
     );
 
-    private static final double kSimLoopPeriod = 0.002; // 2 ms
     private Notifier simNotifier = null;
     private double lastSimTime = 0.0;
 
     /* Mechanism2d visualization of the elevator */
-    private final Mechanism2d mech2d = new Mechanism2d(1, kMaxHeight.in(Meters));
+    private final Mechanism2d mech2d = new Mechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
     private final MechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
         .append(new MechanismLigament2d("leaderMotor", elevatorSim_leaderMotor.getPositionMeters(), 90));
 
@@ -110,7 +103,7 @@ public class Elevator extends SubsystemBase {
         )
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(Amps.of(120))
+                .withStatorCurrentLimit(ElevatorConstants.kCurrentStatorLimit)
                 .withStatorCurrentLimitEnable(true)
         );
 
@@ -122,22 +115,22 @@ public class Elevator extends SubsystemBase {
         )
         .withSlot0(
             motorInitialConfigs.Slot0.clone()
-                .withKP(32)
-                .withKI(0)
-                .withKD(0.4)
-                .withKS(0.2)
-                .withKV(0.96)
-                .withKA(0)
-                .withKG(0.5)
+                .withKP(ElevatorConstants.kP)
+                .withKI(ElevatorConstants.kI)
+                .withKD(ElevatorConstants.kD)
+                .withKS(ElevatorConstants.kS)
+                .withKV(ElevatorConstants.kV)
+                .withKA(ElevatorConstants.kA)
+                .withKG(ElevatorConstants.kG)
                 .withGravityType(GravityTypeValue.Elevator_Static)
         )
         .withMotionMagic(
             motorInitialConfigs.MotionMagic.clone()
-                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(10))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(40))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(400))
-                .withMotionMagicExpo_kV(Volts.per(RotationsPerSecond).ofNative(0.96))
-                .withMotionMagicExpo_kA(Volts.per(RotationsPerSecondPerSecond).ofNative(0.1))
+                .withMotionMagicCruiseVelocity(ElevatorConstants.MotionMagicCruiseVelocity)
+                .withMotionMagicAcceleration(ElevatorConstants.MotionMagicAcceleration)
+                .withMotionMagicJerk(ElevatorConstants.MotionMagicJerk)
+                .withMotionMagicExpo_kV(ElevatorConstants.Expo_kV)
+                .withMotionMagicExpo_kA(ElevatorConstants.Expo_kA)
         )
         .withSoftwareLimitSwitch(
             motorInitialConfigs.SoftwareLimitSwitch.clone()
@@ -160,11 +153,11 @@ public class Elevator extends SubsystemBase {
         );
 
     public Elevator() {
-        for (int i = 0; i < kNumConfigAttempts; ++i) {
+        for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
             var status = leaderMotor.getConfigurator().apply(leaderMotorConfigs);
             if (status.isOK()) break;
         }
-        for (int i = 0; i < kNumConfigAttempts; ++i) {
+        for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
             var status = followerMotor.getConfigurator().apply(followerMotorConfigs);
             if (status.isOK()) break;
         }
@@ -255,7 +248,7 @@ public class Elevator extends SubsystemBase {
         );
 
         leaderMotorMech2d.setLength(
-            leaderMotorPosition.getValueAsDouble() * kDrumRadius.in(Meters) * 2 * Math.PI
+            leaderMotorPosition.getValueAsDouble() * ElevatorConstants.kDrumRadius.in(Meters) * 2 * Math.PI
         );
     }
 
@@ -285,18 +278,18 @@ public class Elevator extends SubsystemBase {
 
             /* Apply the new rotor position and velocity to the motors (before gear ratio) */
             leaderMotorSim.setRawRotorPosition(
-                Radians.of(elevatorSim_leaderMotor.getPositionMeters() / kDrumRadius.in(Meters) * kGearRatio)
+                Radians.of(elevatorSim_leaderMotor.getPositionMeters() / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio)
             );
             leaderMotorSim.setRotorVelocity(
-                RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond() / kDrumRadius.in(Meters) * kGearRatio)
+                RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond() / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio)
             );
             followerMotorSim.setRawRotorPosition(
-                Radians.of(elevatorSim_leaderMotor.getPositionMeters() / kDrumRadius.in(Meters) * kGearRatio)
+                Radians.of(elevatorSim_leaderMotor.getPositionMeters() / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio)
             );
             followerMotorSim.setRotorVelocity(
-                RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond() / kDrumRadius.in(Meters) * kGearRatio)
+                RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond() / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio)
             );
         });
-        simNotifier.startPeriodic(kSimLoopPeriod);
+        simNotifier.startPeriodic(ElevatorConstants.kSimLoopPeriod);
     }
 }
