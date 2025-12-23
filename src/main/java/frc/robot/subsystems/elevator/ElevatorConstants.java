@@ -31,6 +31,7 @@ public class ElevatorConstants {
 
     public static final Current kCurrentStatorLimit = Amps.of(120);
 
+    // Slot 0 gains
     public static final double kP = 32;
     public static final double kI = 0;
     public static final double kD = 0.4;
@@ -41,6 +42,7 @@ public class ElevatorConstants {
 
     public static final double kG = 0.5;
 
+    // Motion magic configs
     public static final AngularVelocity MotionMagicCruiseVelocity = RotationsPerSecond.of(10);
     public static final AngularAcceleration MotionMagicAcceleration = RotationsPerSecondPerSecond.of(40);
     public static final Velocity<AngularAccelerationUnit> MotionMagicJerk = RotationsPerSecondPerSecond.per(Second).of(400);
@@ -48,11 +50,15 @@ public class ElevatorConstants {
     public static final Per<VoltageUnit, AngularVelocityUnit> Expo_kV = Volts.per(RotationsPerSecond).ofNative(0.96);
     public static final Per<VoltageUnit, AngularAccelerationUnit> Expo_kA = Volts.per(RotationsPerSecondPerSecond).ofNative(0.1);
 
+    // Max number of attempts to configure the motor controller
     public static final int kNumConfigAttempts = 2;
 
+    // Gear ratio, drum radius, and max height of the elevator
     public static final double kGearRatio = 8;
     public static final Distance kDrumRadius = Meters.of(0.05);
     public static final Distance kMaxHeight = Meters.of(2);
 
+    // How fast the simulation should loop through
+    // Should be faster to make PID gains more realistic
     public static final double kSimLoopPeriod = 0.002; // 2 ms
 }
