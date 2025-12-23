@@ -13,6 +13,7 @@ public interface GyroIO {
         public Rotation3d[] odometryYawPositions = new Rotation3d[] {};
 
     }
+
     public default void updateInputs(GyroIOInputs inputs) {
         // Default implementation does nothing
     }

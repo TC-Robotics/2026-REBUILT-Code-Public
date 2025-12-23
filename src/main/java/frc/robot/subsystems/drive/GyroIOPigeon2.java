@@ -21,10 +21,9 @@ import java.util.Queue;
 
 /** IO implementation for Pigeon 2. */
 public class GyroIOPigeon2 implements GyroIO {
-  private final Pigeon2 pigeon =
-      new Pigeon2(
-          TunerConstants.DrivetrainConstants.Pigeon2Id,
-          TunerConstants.kCANBus);
+  private final Pigeon2 pigeon = new Pigeon2(
+      TunerConstants.DrivetrainConstants.Pigeon2Id,
+      TunerConstants.kCANBus);
   private final StatusSignal<Angle> yaw = pigeon.getYaw();
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
@@ -51,12 +50,10 @@ public class GyroIOPigeon2 implements GyroIO {
     inputs.yawPosition = new Rotation3d(0.0, 0.0, Units.degreesToRadians(yaw.getValueAsDouble()));
     inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
-    inputs.odometryYawTimestamps =
-        yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-    inputs.odometryYawPositions =
-        yawPositionQueue.stream()
-            .map((Double value) -> new Rotation3d(0.0, 0.0, Units.degreesToRadians(value)))
-            .toArray(Rotation3d[]::new);
+    inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryYawPositions = yawPositionQueue.stream()
+        .map((Double value) -> new Rotation3d(0.0, 0.0, Units.degreesToRadians(value)))
+        .toArray(Rotation3d[]::new);
     yawTimestampQueue.clear();
     yawPositionQueue.clear();
   }

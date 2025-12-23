@@ -43,8 +43,10 @@ public class Drive extends SubsystemBase {
             ? 250.0
             : 100.0;
 
-    // Used for creating a circle around the robot in which everything is contained, fulfilling all safety and boundary requirements.
-    // Useful for angular speed calculations, as it makes sure we don't exceed the max speed at any point on the robot.
+    // Used for creating a circle around the robot in which everything is contained,
+    // fulfilling all safety and boundary requirements.
+    // Useful for angular speed calculations, as it makes sure we don't exceed the
+    // max speed at any point on the robot.
     public static final double DRIVE_BASE_RADIUS = Math.max(
             Math.max(
                     Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
