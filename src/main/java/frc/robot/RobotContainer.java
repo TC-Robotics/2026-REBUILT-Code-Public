@@ -11,7 +11,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
 import edu.wpi.first.wpilibj.GenericHID;
-
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -28,6 +28,8 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import frc.robot.subsystems.ExampleSubsystem;
+
+import com.pathplanner.lib.auto.AutoBuilder;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -93,7 +95,7 @@ public class RobotContainer {
                 break;
         }
 
-        autoChooser = new LoggedDashboardChooser<>("Auto Routine");
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
         // Set up SysId routines
         autoChooser.addOption(
@@ -162,6 +164,6 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return Autos.exampleAuto(m_exampleSubsystem);
+        return autoChooser.get();
     }
 }
