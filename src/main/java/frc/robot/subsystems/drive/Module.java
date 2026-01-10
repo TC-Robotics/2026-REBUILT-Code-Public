@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2025 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 // This Module class represents a single swerve drive module, handling its state and control.
 // It uses ModuleIO (which when this class is instantiated, is actually either the sim or a talonfx), and is used by the Drive class.
 
