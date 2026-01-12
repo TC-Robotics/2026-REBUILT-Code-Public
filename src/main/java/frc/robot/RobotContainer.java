@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -155,6 +156,8 @@ public class RobotContainer {
                         "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
                 autoChooser.addOption(
                         "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
+
+                autoChooser.addOption("Competition Auto", Autos.compAuto(drive));
 
                 // Configure the button bindings
                 configureButtonBindings();
