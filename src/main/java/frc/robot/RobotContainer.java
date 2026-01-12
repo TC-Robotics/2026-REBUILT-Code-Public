@@ -149,6 +149,13 @@ public class RobotContainer {
                 autoChooser.addOption(
                                 "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+                autoChooser.addOption(
+                        "Elevator Test: Ground", elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
+                autoChooser.addOption(
+                        "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
+                autoChooser.addOption(
+                        "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
+
                 // Configure the button bindings
                 configureButtonBindings();
         }
