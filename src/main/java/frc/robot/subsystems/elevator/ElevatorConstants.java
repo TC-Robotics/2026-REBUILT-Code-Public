@@ -51,6 +51,7 @@ public class ElevatorConstants {
     // Gear ratio, drum radius, and max height of the elevator
     public static final double kGearRatio = 8;
     public static final Distance kDrumRadius = Meters.of(0.05);
+    public static final Distance kMinHeight = Meters.of(1);
     public static final Distance kMaxHeight = Meters.of(2);
 
     // How fast the simulation should loop through

@@ -36,250 +36,114 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Elevator extends SubsystemBase {
-    /** Position setpoints for the elevator. */
-    public enum Setpoint {
-        Ground(Rotations.of(0)),
-        MidScore(Meters.of(1)),
-        HighScore(Meters.of(1.5));
 
-        /** The position target of the setpoint in angular units. */
-        public final Angle target;
-        /** The position target of the setpoint in linear units. */
-        public final Distance targetDist;
+        private final ElevatorIO io;
+        private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-        private Setpoint(Angle target) {
-            this.target = target;
-            this.targetDist = ElevatorConstants.kDrumRadius.times(target.in(Radians));
+        /** Position setpoints for the elevator. */
+        public enum Setpoint {
+                Ground(Rotations.of(0)),
+                MidScore(Meters.of(1)),
+                HighScore(Meters.of(1.5));
+
+                /** The position target of the setpoint in angular units. */
+                public final Angle target;
+                /** The position target of the setpoint in linear units. */
+                public final Distance targetDist;
+
+                private Setpoint(Angle target) {
+                        this.target = target;
+                        this.targetDist = ElevatorConstants.kDrumRadius.times(target.in(Radians));
+                }
+
+                private Setpoint(Distance target) {
+                        this.target = Radians.of(target.div(ElevatorConstants.kDrumRadius).magnitude());
+                        this.targetDist = target;
+                }
         }
 
-        private Setpoint(Distance target) {
-            this.target = Radians.of(target.div(ElevatorConstants.kDrumRadius).magnitude());
-            this.targetDist = target;
-        }
-    }
 
-    /* leader and follower motors */
-    private final CANBus kCANBus = ElevatorConstants.kCANBus;
-    private final TalonFX leaderMotor = new TalonFX(0, kCANBus);
-    private final TalonFX followerMotor = new TalonFX(1, kCANBus);
+        /* Mechanism2d visualization of the elevator */
+        private final Mechanism2d mech2d = new Mechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
+        private final MechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
+                        .append(new MechanismLigament2d("leaderMotor", ElevatorConstants.kMinHeight.in(Meters),
+                                        90));
 
-    /* device status signals */
-    private final StatusSignal<Angle> leaderMotorPosition = leaderMotor.getPosition(false);
-    private final StatusSignal<AngularVelocity> leaderMotorVelocity = leaderMotor.getVelocity(false);
-    private final StatusSignal<Current> leaderMotorTorqueCurrent = leaderMotor.getTorqueCurrent(false);
+        public Elevator(ElevatorIO io) {
+                this.io = io;
 
-    /* controls used by the leader motors */
-    private final MotionMagicExpoTorqueCurrentFOC setpointRequest = new MotionMagicExpoTorqueCurrentFOC(0);
-    private final DutyCycleOut manualRequest = new DutyCycleOut(0);
-    private final DutyCycleOut calibrationRequest = new DutyCycleOut(-0.1)
-            .withIgnoreHardwareLimits(true)
-            .withIgnoreSoftwareLimits(true);
+                /* set the default command to neutral output */
+                setDefaultCommand(manualDrive(() -> 0.0));
+                /* alternatively, the default command can hold position */
+                // setDefaultCommand(holdPosition());
 
-    /** Trigger to detect when the elevator drives into a hard stop. */
-    public final Trigger isHardStop = new Trigger(() -> {
-        return leaderMotorVelocity.getValue().abs(RotationsPerSecond) < 1 &&
-                leaderMotorTorqueCurrent.getValue().abs(Amps) > 10;
-    }).debounce(0.1);
+                SmartDashboard.putData("Elevator", mech2d);
 
-    /* simulation */
-    private final ElevatorSim elevatorSim_leaderMotor = new ElevatorSim(
-            DCMotor.getKrakenX60Foc(2),
-            ElevatorConstants.kGearRatio, 5, ElevatorConstants.kDrumRadius.in(Meters),
-            0.0, ElevatorConstants.kMaxHeight.in(Meters), true, 0.0);
-
-    private Notifier simNotifier = null;
-    private double lastSimTime = 0.0;
-
-    /* Mechanism2d visualization of the elevator */
-    private final Mechanism2d mech2d = new Mechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
-    private final MechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
-            .append(new MechanismLigament2d("leaderMotor", elevatorSim_leaderMotor.getPositionMeters(), 90));
-
-    /** Configs common across all motors. */
-    private static final TalonFXConfiguration motorInitialConfigs = new TalonFXConfiguration()
-            .withMotorOutput(
-                    new MotorOutputConfigs()
-                            .withNeutralMode(NeutralModeValue.Brake))
-            .withCurrentLimits(
-                    new CurrentLimitsConfigs()
-                            .withStatorCurrentLimit(ElevatorConstants.kCurrentStatorLimit)
-                            .withStatorCurrentLimitEnable(true));
-
-    /** Configs common across just the leader motors. */
-    private static final TalonFXConfiguration leaderInitialConfigs = motorInitialConfigs.clone()
-            .withFeedback(
-                    motorInitialConfigs.Feedback.clone()
-                            .withSensorToMechanismRatio(8))
-            .withSlot0(
-                    motorInitialConfigs.Slot0.clone()
-                            .withKP(ElevatorConstants.kP)
-                            .withKI(ElevatorConstants.kI)
-                            .withKD(ElevatorConstants.kD)
-                            .withKS(ElevatorConstants.kS)
-                            .withKV(ElevatorConstants.kV)
-                            .withKA(ElevatorConstants.kA)
-                            .withKG(ElevatorConstants.kG)
-                            .withGravityType(GravityTypeValue.Elevator_Static))
-            .withMotionMagic(
-                    motorInitialConfigs.MotionMagic.clone()
-                            .withMotionMagicCruiseVelocity(ElevatorConstants.MotionMagicCruiseVelocity)
-                            .withMotionMagicAcceleration(ElevatorConstants.MotionMagicAcceleration)
-                            .withMotionMagicJerk(ElevatorConstants.MotionMagicJerk)
-                            .withMotionMagicExpo_kV(ElevatorConstants.Expo_kV)
-                            .withMotionMagicExpo_kA(ElevatorConstants.Expo_kA))
-            .withSoftwareLimitSwitch(
-                    motorInitialConfigs.SoftwareLimitSwitch.clone()
-                            .withReverseSoftLimitThreshold(Rotations.of(0))
-                            .withReverseSoftLimitEnable(true));
-
-    /** Configs for {@link #leaderMotor}. */
-    private final TalonFXConfiguration leaderMotorConfigs = leaderInitialConfigs.clone()
-            .withMotorOutput(
-                    leaderInitialConfigs.MotorOutput.clone()
-                            .withInverted(InvertedValue.CounterClockwise_Positive));
-
-    /** Configs for {@link #followerMotor}. */
-    private final TalonFXConfiguration followerMotorConfigs = motorInitialConfigs.clone()
-            .withMotorOutput(
-                    motorInitialConfigs.MotorOutput.clone()
-                            .withInverted(InvertedValue.CounterClockwise_Positive));
-
-    public Elevator() {
-        for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
-            var status = leaderMotor.getConfigurator().apply(leaderMotorConfigs);
-            if (status.isOK())
-                break;
-        }
-        for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
-            var status = followerMotor.getConfigurator().apply(followerMotorConfigs);
-            if (status.isOK())
-                break;
         }
 
-        followerMotor.setControl(
-                new Follower(leaderMotor.getDeviceID(), MotorAlignmentValue.Aligned));
-
-        /* set the default command to neutral output */
-        setDefaultCommand(manualDrive(() -> 0.0));
-        /* alternatively, the default command can hold position */
-        // setDefaultCommand(holdPosition());
-
-        SmartDashboard.putData("Elevator", mech2d);
-
-        if (Utils.isSimulation()) {
-            startSimThread();
+        /**
+         * Holds the elevator at the current position using PID.
+         *
+         * @return Command to run
+         */
+        public Command holdPosition() {
+                return runOnce(() -> setpointRequest.withPosition(leaderMotorPosition.getValue())).andThen(run(() -> {
+                        leaderMotor.setControl(setpointRequest);
+                }));
         }
-    }
 
-    /**
-     * Holds the elevator at the current position using PID.
-     *
-     * @return Command to run
-     */
-    public Command holdPosition() {
-        return runOnce(() -> setpointRequest.withPosition(leaderMotorPosition.getValue())).andThen(run(() -> {
-            leaderMotor.setControl(setpointRequest);
-        }));
-    }
+        /**
+         * Drives the elevator to the provided position setpoint.
+         *
+         * @param setpoint Function returning the setpoint to apply
+         * @return Command to run
+         */
+        public Command goToSetpoint(Supplier<Setpoint> setpoint) {
+                return run(() -> {
+                        setpointRequest.withPosition(setpoint.get().target);
+                        leaderMotor.setControl(setpointRequest);
+                });
+        }
 
-    /**
-     * Drives the elevator to the provided position setpoint.
-     *
-     * @param setpoint Function returning the setpoint to apply
-     * @return Command to run
-     */
-    public Command goToSetpoint(Supplier<Setpoint> setpoint) {
-        return run(() -> {
-            setpointRequest.withPosition(setpoint.get().target);
-            leaderMotor.setControl(setpointRequest);
-        });
-    }
+        /**
+         * Manually drives the elevator with the provided duty cycle output.
+         *
+         * @param manualOutput Function returning the duty cycle to apply
+         * @return Command to run
+         */
+        public Command manualDrive(DoubleSupplier manualOutput) {
+                return run(() -> {
+                        manualRequest.withOutput(manualOutput.getAsDouble());
+                        leaderMotor.setControl(manualRequest);
+                });
+        }
 
-    /**
-     * Manually drives the elevator with the provided duty cycle output.
-     *
-     * @param manualOutput Function returning the duty cycle to apply
-     * @return Command to run
-     */
-    public Command manualDrive(DoubleSupplier manualOutput) {
-        return run(() -> {
-            manualRequest.withOutput(manualOutput.getAsDouble());
-            leaderMotor.setControl(manualRequest);
-        });
-    }
+        /**
+         * Recalibrates the elevator zero point. This slowly drives the elevator
+         * down until we see a drop in velocity and a spike in stator current,
+         * indicating that we've hit a hard stop.
+         *
+         * @return Command to run
+         */
+        public Command calibrateZero() {
+                return run(() -> {
+                        leaderMotor.setControl(calibrationRequest);
+                })
+                                .until(isHardStop)
+                                .andThen(
+                                                manualDrive(() -> 0.0).withTimeout(0.25)
+                                                                .finallyDo(() -> {
+                                                                        leaderMotor.setPosition(Rotations.of(0));
+                                                                        followerMotor.setPosition(Rotations.of(0));
+                                                                }));
+        }
 
-    /**
-     * Recalibrates the elevator zero point. This slowly drives the elevator
-     * down until we see a drop in velocity and a spike in stator current,
-     * indicating that we've hit a hard stop.
-     *
-     * @return Command to run
-     */
-    public Command calibrateZero() {
-        return run(() -> {
-            leaderMotor.setControl(calibrationRequest);
-        })
-                .until(isHardStop)
-                .andThen(
-                        manualDrive(() -> 0.0).withTimeout(0.25)
-                                .finallyDo(() -> {
-                                    leaderMotor.setPosition(Rotations.of(0));
-                                    followerMotor.setPosition(Rotations.of(0));
-                                }));
-    }
+        @Override
+        public void periodic() {
+                io.updateInputs(inputs);
 
-    @Override
-    public void periodic() {
-        /* refresh all status signals */
-        BaseStatusSignal.refreshAll(
-                leaderMotorPosition,
-                leaderMotorVelocity,
-                leaderMotorTorqueCurrent);
-
-        leaderMotorMech2d.setLength(
-                leaderMotorPosition.getValueAsDouble() * ElevatorConstants.kDrumRadius.in(Meters) * 2 * Math.PI);
-    }
-
-    private void startSimThread() {
-        leaderMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-        followerMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-
-        lastSimTime = Utils.getCurrentTimeSeconds();
-
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
-        simNotifier = new Notifier(() -> {
-            /* Calculate the time delta */
-            final double currentTime = Utils.getCurrentTimeSeconds();
-            final double deltaTime = currentTime - lastSimTime;
-            lastSimTime = currentTime;
-
-            final var leaderMotorSim = leaderMotor.getSimState();
-            final var followerMotorSim = followerMotor.getSimState();
-
-            /* First set the supply voltage of all the devices */
-            leaderMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-            followerMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-            /* Then calculate the new position and velocity of the simulated elevator */
-            elevatorSim_leaderMotor.setInputVoltage(leaderMotorSim.getMotorVoltage());
-            elevatorSim_leaderMotor.update(deltaTime);
-
-            /*
-             * Apply the new rotor position and velocity to the motors (before gear ratio)
-             */
-            leaderMotorSim.setRawRotorPosition(
-                    Radians.of(elevatorSim_leaderMotor.getPositionMeters() / ElevatorConstants.kDrumRadius.in(Meters)
-                            * ElevatorConstants.kGearRatio));
-            leaderMotorSim.setRotorVelocity(
-                    RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond()
-                            / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio));
-            followerMotorSim.setRawRotorPosition(
-                    Radians.of(elevatorSim_leaderMotor.getPositionMeters() / ElevatorConstants.kDrumRadius.in(Meters)
-                            * ElevatorConstants.kGearRatio));
-            followerMotorSim.setRotorVelocity(
-                    RadiansPerSecond.of(elevatorSim_leaderMotor.getVelocityMetersPerSecond()
-                            / ElevatorConstants.kDrumRadius.in(Meters) * ElevatorConstants.kGearRatio));
-        });
-        simNotifier.startPeriodic(ElevatorConstants.kSimLoopPeriod);
-    }
+                leaderMotorMech2d.setLength(
+                                inputs.positionRotations * ElevatorConstants.kDrumRadius.in(Meters) * 2
+                                                * Math.PI);
+        }
 }
