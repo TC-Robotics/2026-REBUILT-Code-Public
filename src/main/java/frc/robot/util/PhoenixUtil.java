@@ -34,12 +34,13 @@ public class PhoenixUtil {
     }
 
     /** Refresh all registered signals. */
-    public static void refreshAll() {
+    public static StatusCode refreshAll() {
         if (canivoreSignals.length > 0) {
-            BaseStatusSignal.refreshAll(canivoreSignals);
+            return BaseStatusSignal.refreshAll(canivoreSignals);
         }
         if (rioSignals.length > 0) {
-            BaseStatusSignal.refreshAll(rioSignals);
+            return BaseStatusSignal.refreshAll(rioSignals);
         }
+        return StatusCode.GeneralError;
     }
 }

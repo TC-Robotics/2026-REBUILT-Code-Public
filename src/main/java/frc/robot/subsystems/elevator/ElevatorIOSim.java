@@ -18,7 +18,7 @@ public class ElevatorIOSim extends ElevatorIOTalon {
     private final ElevatorSim elevatorSim_leaderMotor = new ElevatorSim(
             DCMotor.getKrakenX60Foc(2),
             ElevatorConstants.kGearRatio, 5, ElevatorConstants.kDrumRadius.in(Meters),
-            0.0, ElevatorConstants.kMaxHeight.in(Meters), true, 0.0);
+            ElevatorConstants.kMinHeight.in(Meters), ElevatorConstants.kMaxHeight.in(Meters), true, ElevatorConstants.kMinHeight.in(Meters));
 
     private Notifier simNotifier = null;
     private double lastSimTime = 0.0;

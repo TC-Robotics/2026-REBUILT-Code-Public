@@ -62,6 +62,11 @@ public class Elevator extends SubsystemBase {
                 }
         }
 
+        /** Trigger to detect when the elevator drives into a hard stop. */
+        public final Trigger isHardStop = new Trigger(() -> {
+                return inputs.angularVelocityRotationsPerSecond < 1 &&
+                                inputs.currentAmps > 10;
+        }).debounce(0.1);
 
         /* Mechanism2d visualization of the elevator */
         private final Mechanism2d mech2d = new Mechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
@@ -87,9 +92,7 @@ public class Elevator extends SubsystemBase {
          * @return Command to run
          */
         public Command holdPosition() {
-                return runOnce(() -> setpointRequest.withPosition(leaderMotorPosition.getValue())).andThen(run(() -> {
-                        leaderMotor.setControl(setpointRequest);
-                }));
+                return runOnce(() -> io.setPosition(inputs.positionRotations));
         }
 
         /**
@@ -100,8 +103,7 @@ public class Elevator extends SubsystemBase {
          */
         public Command goToSetpoint(Supplier<Setpoint> setpoint) {
                 return run(() -> {
-                        setpointRequest.withPosition(setpoint.get().target);
-                        leaderMotor.setControl(setpointRequest);
+                        io.setPosition(setpoint.get().targetDist.in(Meter));
                 });
         }
 
@@ -113,8 +115,7 @@ public class Elevator extends SubsystemBase {
          */
         public Command manualDrive(DoubleSupplier manualOutput) {
                 return run(() -> {
-                        manualRequest.withOutput(manualOutput.getAsDouble());
-                        leaderMotor.setControl(manualRequest);
+                        io.manualDrive(manualOutput.getAsDouble());
                 });
         }
 
@@ -127,14 +128,13 @@ public class Elevator extends SubsystemBase {
          */
         public Command calibrateZero() {
                 return run(() -> {
-                        leaderMotor.setControl(calibrationRequest);
+
                 })
                                 .until(isHardStop)
                                 .andThen(
                                                 manualDrive(() -> 0.0).withTimeout(0.25)
                                                                 .finallyDo(() -> {
-                                                                        leaderMotor.setPosition(Rotations.of(0));
-                                                                        followerMotor.setPosition(Rotations.of(0));
+                                                                        io.zero();
                                                                 }));
         }
 

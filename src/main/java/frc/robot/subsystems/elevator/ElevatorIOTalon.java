@@ -89,11 +89,6 @@ public class ElevatorIOTalon implements ElevatorIO {
             .withIgnoreHardwareLimits(true)
             .withIgnoreSoftwareLimits(true);
 
-    /** Trigger to detect when the elevator drives into a hard stop. */
-    public final Trigger isHardStop = new Trigger(() -> {
-        return leaderMotorVelocity.getValue().abs(RotationsPerSecond) < 1 &&
-                leaderMotorTorqueCurrent.getValue().abs(Amps) > 10;
-    }).debounce(0.1);
 
     ElevatorIOTalon() {
         for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
@@ -107,7 +102,8 @@ public class ElevatorIOTalon implements ElevatorIO {
                 break;
         }
 
-        BaseStatusSignal.setUpdateFrequencyForAll(20.0, leaderMotorPosition, leaderMotorVelocity, leaderMotorTorqueCurrent);
+        BaseStatusSignal.setUpdateFrequencyForAll(20.0, leaderMotorPosition, leaderMotorVelocity,
+                leaderMotorTorqueCurrent);
 
         followerMotor.setControl(
                 new Follower(leaderMotor.getDeviceID(), MotorAlignmentValue.Aligned));
@@ -118,6 +114,39 @@ public class ElevatorIOTalon implements ElevatorIO {
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
         /* refresh all status signals */
-        PhoenixUtil.refreshAll();
+        var refresh = PhoenixUtil.refreshAll();
+        inputs.currentAmps = leaderMotorTorqueCurrent.getValueAsDouble();
+        inputs.positionRotations = leaderMotorPosition.getValueAsDouble();
+        inputs.angularVelocityRotationsPerSecond = leaderMotorVelocity.getValueAsDouble();
+        inputs.connected = refresh.isOK();
+
+    }
+
+    @Override
+    public void setPosition(double positionMeters) {
+        setpointRequest.withPosition(positionMetresToRotations(positionMeters));
+        leaderMotor.setControl(setpointRequest);
+    }
+
+    @Override
+    public void zero() {
+        leaderMotor.setPosition(0);
+        followerMotor.setPosition(0);
+    }
+
+    @Override
+    public void manualDrive(double voltageProportion) {
+        manualRequest.withOutput(voltageProportion);
+        leaderMotor.setControl(manualRequest);
+    }
+
+    @Override
+    public double positionRotationsToMetres(double rotations) {
+        return rotations * Math.PI * 2 * ElevatorConstants.kDrumRadius.in(Meter) / ElevatorConstants.kGearRatio;
+    }
+
+    @Override
+    public double positionMetresToRotations(double metres) {
+        return metres / (Math.PI * 2 * ElevatorConstants.kDrumRadius.in(Meter)) * ElevatorConstants.kGearRatio;
     }
 }
