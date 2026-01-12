@@ -37,7 +37,7 @@ public final class Autos {
 
       mainAutoCommands.addCommands(follows);
 
-      return mainAutoCommands;
+      return mainAutoCommands.withTimeout(15);
 
     } catch (Exception e) {
       DriverStation.reportError("Getting the paths royally fucked up: " + e.getMessage(), e.getStackTrace());

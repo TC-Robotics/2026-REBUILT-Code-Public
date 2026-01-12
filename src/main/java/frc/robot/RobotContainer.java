@@ -157,7 +157,7 @@ public class RobotContainer {
                 autoChooser.addOption(
                         "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
 
-                autoChooser.addOption("Competition Auto", Autos.compAuto(drive));
+                autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive));
 
                 // Configure the button bindings
                 configureButtonBindings();
