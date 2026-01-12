@@ -2,8 +2,6 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.wpilibj2.command.Command;
-
 public interface ElevatorIO {
     @AutoLog
     public static class ElevatorIOInputs {
