@@ -32,4 +32,6 @@ public interface ElevatorIO {
     public default double positionMetresToRotations(double metres) {
         return metres;
     }
+
+    public default void calibrateDrive() {}
 }

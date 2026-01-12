@@ -23,7 +23,7 @@ public class ElevatorIOSim extends ElevatorIOTalon {
     private Notifier simNotifier = null;
     private double lastSimTime = 0.0;
 
-    ElevatorIOSim() {
+    public ElevatorIOSim() {
         super();
 
         if (Utils.isSimulation()) {

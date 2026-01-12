@@ -90,7 +90,7 @@ public class ElevatorIOTalon implements ElevatorIO {
             .withIgnoreSoftwareLimits(true);
 
 
-    ElevatorIOTalon() {
+    public ElevatorIOTalon() {
         for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
             var status = leaderMotor.getConfigurator().apply(leaderMotorConfigs);
             if (status.isOK())
@@ -132,6 +132,11 @@ public class ElevatorIOTalon implements ElevatorIO {
     public void zero() {
         leaderMotor.setPosition(0);
         followerMotor.setPosition(0);
+    }
+
+    @Override
+    public void calibrateDrive() {
+        leaderMotor.setControl(calibrationRequest);
     }
 
     @Override

@@ -6,6 +6,11 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -69,20 +74,19 @@ public class Elevator extends SubsystemBase {
         }).debounce(0.1);
 
         /* Mechanism2d visualization of the elevator */
-        private final Mechanism2d mech2d = new Mechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
-        private final MechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
-                        .append(new MechanismLigament2d("leaderMotor", ElevatorConstants.kMinHeight.in(Meters),
+        @AutoLogOutput
+        private final LoggedMechanism2d mech2d = new LoggedMechanism2d(1, ElevatorConstants.kMaxHeight.in(Meters));
+        private final LoggedMechanismLigament2d leaderMotorMech2d = mech2d.getRoot("leaderMotor Root", 0.500, 0)
+                        .append(new LoggedMechanismLigament2d("leaderMotor", ElevatorConstants.kMinHeight.in(Meters),
                                         90));
 
         public Elevator(ElevatorIO io) {
                 this.io = io;
-
+                Logger.processInputs("Elevator", inputs);
                 /* set the default command to neutral output */
                 setDefaultCommand(manualDrive(() -> 0.0));
                 /* alternatively, the default command can hold position */
                 // setDefaultCommand(holdPosition());
-
-                SmartDashboard.putData("Elevator", mech2d);
 
         }
 
@@ -128,7 +132,7 @@ public class Elevator extends SubsystemBase {
          */
         public Command calibrateZero() {
                 return run(() -> {
-
+                        io.calibrateDrive();
                 })
                                 .until(isHardStop)
                                 .andThen(

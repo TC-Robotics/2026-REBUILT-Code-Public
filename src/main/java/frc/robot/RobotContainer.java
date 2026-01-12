@@ -17,6 +17,10 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOTalon;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
@@ -46,6 +50,7 @@ public class RobotContainer {
         // Subsystems
         private final Drive drive;
         private final Vision vision;
+        private final Elevator elevator;
         private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
         // Controller
@@ -73,6 +78,10 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhoton(camera0Name, robotToCamera0),
                                                 new VisionIOPhoton(camera1Name, robotToCamera1));
+                                
+                                elevator = new Elevator(
+                                        new ElevatorIOTalon()
+                                );
 
                                 break;
 
@@ -92,6 +101,10 @@ public class RobotContainer {
                                                                 drive::getPose),
                                                 new VisionIOPhotonSim(camera1Name, robotToCamera1,
                                                                 drive::getPose));
+                                
+                                elevator = new Elevator(
+                                        new ElevatorIOSim()
+                                );
                                 break;
 
                         default:
@@ -110,6 +123,10 @@ public class RobotContainer {
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 }, new VisionIO() {
                                 });
+
+                                elevator = new Elevator(
+                                        new ElevatorIO() {}
+                                );
                                 break;
                 }
 
@@ -177,6 +194,18 @@ public class RobotContainer {
                                                                                                 Rotation3d.kZero)),
                                                                 drive)
                                                                 .ignoringDisable(true));
+
+                controller.R2().onTrue(
+                        elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore)
+                );
+
+                controller.R1().onTrue(
+                        elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore)
+                );
+
+                controller.L2().onTrue(
+                        elevator.goToSetpoint(() -> Elevator.Setpoint.Ground)
+                );
         }
 
         /**
