@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -27,4 +29,6 @@ public final class Constants {
     SIM,
     REPLAY
   }
+
+  public static final PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0);
 }

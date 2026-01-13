@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
+import frc.robot.Constants;
+
 public final class Autos {
   /** Example static factory for an autonomous command. */
   public static Command exampleAuto(ExampleSubsystem subsystem) {
@@ -30,14 +32,19 @@ public final class Autos {
 
       SequentialCommandGroup mainAutoCommands = new SequentialCommandGroup();
 
-      SequentialCommandGroup[] follows = new SequentialCommandGroup[choreoTrajs.length];
+      Command[] follows = new Command[choreoTrajs.length];
       for (int i = 0; i < choreoTrajs.length; i++) {
-        follows[i] = AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", ""))).andThen(new WaitCommand(0.2));
+        if (i == 0) {
+          follows[0] = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[0].getName().replaceAll("\\.traj", "")), Constants.constraints).andThen(new WaitCommand(0.2));
+        }
+        else {
+          follows[i] = AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", ""))).andThen(new WaitCommand(0.2));
+        }
       }
 
       mainAutoCommands.addCommands(follows);
 
-      return mainAutoCommands.withTimeout(15);
+      return mainAutoCommands;
 
     } catch (Exception e) {
       DriverStation.reportError("Getting the paths royally fucked up: " + e.getMessage(), e.getStackTrace());
