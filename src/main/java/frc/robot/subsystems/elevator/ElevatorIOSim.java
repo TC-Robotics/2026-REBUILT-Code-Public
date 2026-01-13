@@ -11,6 +11,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import frc.robot.util.PhoenixUtil;
 
 public class ElevatorIOSim extends ElevatorIOTalon {
 
@@ -18,7 +19,8 @@ public class ElevatorIOSim extends ElevatorIOTalon {
     private final ElevatorSim elevatorSim_leaderMotor = new ElevatorSim(
             DCMotor.getKrakenX60Foc(2),
             ElevatorConstants.kGearRatio, 5, ElevatorConstants.kDrumRadius.in(Meters),
-            ElevatorConstants.kMinHeight.in(Meters), ElevatorConstants.kMaxHeight.in(Meters), true, ElevatorConstants.kMinHeight.in(Meters));
+            ElevatorConstants.kMinHeight.in(Meters), ElevatorConstants.kMaxHeight.in(Meters), true,
+            ElevatorConstants.kMinHeight.in(Meters));
 
     private Notifier simNotifier = null;
     private double lastSimTime = 0.0;
@@ -29,6 +31,11 @@ public class ElevatorIOSim extends ElevatorIOTalon {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+    }
+
+    @Override
+    public void updateInputs(ElevatorIOInputs inputs) {
+        super.updateInputs(inputs);
     }
 
     private void startSimThread() {

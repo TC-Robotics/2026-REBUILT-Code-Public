@@ -50,8 +50,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
         // Subsystems
         private final Drive drive;
+        @SuppressWarnings("unused")
         private final Vision vision;
         private final Elevator elevator;
+
+        @SuppressWarnings("unused")
         private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
         // Controller
@@ -157,7 +160,7 @@ public class RobotContainer {
                 autoChooser.addOption(
                         "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
 
-                autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive));
+                autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive, elevator));
 
                 // Configure the button bindings
                 configureButtonBindings();

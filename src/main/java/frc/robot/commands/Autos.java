@@ -2,10 +2,10 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.elevator.Elevator;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -13,7 +13,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
@@ -25,7 +24,7 @@ public final class Autos {
     return Commands.sequence(subsystem.exampleMethodCommand(), new ExampleCommand(subsystem));
   }
 
-  public static Command compAuto(Drive drive) {
+  public static Command compAuto(Drive drive, Elevator elevator) {
     try {
       File[] choreoTrajs = new File("./src/main/deploy/choreo").listFiles((dir, name) -> name.endsWith(".traj"));
       Arrays.sort(choreoTrajs);
@@ -35,10 +34,12 @@ public final class Autos {
       Command[] follows = new Command[choreoTrajs.length];
       for (int i = 0; i < choreoTrajs.length; i++) {
         if (i == 0) {
-          follows[0] = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[0].getName().replaceAll("\\.traj", "")), Constants.constraints).andThen(new WaitCommand(0.2));
+          follows[0] = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[0].getName().replaceAll("\\.traj", "")), Constants.constraints)
+          .andThen(new WaitCommand(0.2));
         }
         else {
-          follows[i] = AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", ""))).andThen(new WaitCommand(0.2));
+          follows[i] = AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", "")))
+          .andThen(new WaitCommand(0.2));
         }
       }
 

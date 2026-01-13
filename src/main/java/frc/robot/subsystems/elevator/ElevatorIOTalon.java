@@ -143,14 +143,4 @@ public class ElevatorIOTalon implements ElevatorIO {
         manualRequest.withOutput(voltageProportion);
         leaderMotor.setControl(manualRequest);
     }
-
-    @Override
-    public double positionRotationsToMetres(double rotations) {
-        return rotations * Math.PI * 2 * ElevatorConstants.kDrumRadius.in(Meter) / ElevatorConstants.kGearRatio;
-    }
-
-    @Override
-    public double positionMetresToRotations(double metres) {
-        return metres / (Math.PI * 2 * ElevatorConstants.kDrumRadius.in(Meter)) * ElevatorConstants.kGearRatio;
-    }
 }
