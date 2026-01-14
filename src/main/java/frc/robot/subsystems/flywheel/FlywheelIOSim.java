@@ -1,4 +1,4 @@
-package frc.robot.subsystems.turret.flywheel;
+package frc.robot.subsystems.flywheel;
 
 public class FlywheelIOSim implements FlywheelIO {
     

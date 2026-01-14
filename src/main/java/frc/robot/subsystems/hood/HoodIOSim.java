@@ -1,4 +1,4 @@
-package frc.robot.subsystems.turret.hood;
+package frc.robot.subsystems.hood;
 
 public class HoodIOSim implements HoodIO {
     
