@@ -13,6 +13,7 @@ import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -82,10 +83,9 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhoton(camera0Name, robotToCamera0),
                                                 new VisionIOPhoton(camera1Name, robotToCamera1));
-                                
+
                                 elevator = new Elevator(
-                                        new ElevatorIOTalon()
-                                );
+                                                new ElevatorIOTalon());
 
                                 break;
 
@@ -105,10 +105,9 @@ public class RobotContainer {
                                                                 drive::getPose),
                                                 new VisionIOPhotonSim(camera1Name, robotToCamera1,
                                                                 drive::getPose));
-                                
+
                                 elevator = new Elevator(
-                                        new ElevatorIOSim()
-                                );
+                                                new ElevatorIOSim());
                                 break;
 
                         default:
@@ -129,8 +128,8 @@ public class RobotContainer {
                                 });
 
                                 elevator = new Elevator(
-                                        new ElevatorIO() {}
-                                );
+                                                new ElevatorIO() {
+                                                });
                                 break;
                 }
 
@@ -154,11 +153,11 @@ public class RobotContainer {
                                 "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
                 autoChooser.addOption(
-                        "Elevator Test: Ground", elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
+                                "Elevator Test: Ground", elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
                 autoChooser.addOption(
-                        "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
+                                "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
                 autoChooser.addOption(
-                        "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
+                                "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
 
                 autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive, elevator));
 
@@ -208,17 +207,22 @@ public class RobotContainer {
                                                                 drive)
                                                                 .ignoringDisable(true));
 
+                // Force the robot to face towards the hub
+                controller.square().whileTrue(
+                                DriveCommands.joystickDriveAtAngle(
+                                                drive,
+                                                () -> -controller.getLeftY(),
+                                                () -> -controller.getLeftX(),
+                                                () -> Drive.getAngleToHub(drive.getPose())));
+
                 controller.R2().onTrue(
-                        elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore)
-                );
+                                elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
 
                 controller.R1().onTrue(
-                        elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore)
-                );
+                                elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
 
                 controller.L2().onTrue(
-                        elevator.goToSetpoint(() -> Elevator.Setpoint.Ground)
-                );
+                                elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
         }
 
         /**

@@ -156,8 +156,7 @@ public class Drive extends SubsystemBase {
                         (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
                         (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-        
-        
+
     }
 
     @Override
@@ -342,6 +341,7 @@ public class Drive extends SubsystemBase {
     public Pose2d getPose2d() {
         return poseEstimator.getEstimatedPosition().toPose2d();
     }
+
     /** Returns the current odometry rotation. */
     public Rotation3d getRotation() {
         return getPose().getRotation();
@@ -373,6 +373,15 @@ public class Drive extends SubsystemBase {
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+    }
+
+    public static Rotation3d getAngleToHub(Pose3d robotPose) {
+        Pose3d hubPose = DriveConstants.getHubPose();
+
+        double dx = hubPose.getX() - robotPose.getX();
+        double dy = hubPose.getY() - robotPose.getY();
+
+        return new Rotation3d(0.0, 0.0, Math.atan2(dy, dx));
     }
 
     /** Returns an array of module translations. */
