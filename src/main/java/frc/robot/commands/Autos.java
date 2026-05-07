@@ -24,7 +24,7 @@ public final class Autos {
     return Commands.sequence(subsystem.exampleMethodCommand(), new ExampleCommand(subsystem));
   }
 
-  public static Command compAuto(Drive drive, Elevator elevator) {
+  public static Command compAuto(Drive drive) {
     try {
       File[] choreoTrajs = new File("./src/main/deploy/choreo").listFiles((dir, name) -> name.endsWith(".traj"));
       Arrays.sort(choreoTrajs);

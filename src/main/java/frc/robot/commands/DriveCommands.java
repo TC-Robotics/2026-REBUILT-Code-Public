@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import com.pathplanner.lib.util.DriveFeedforwards;
+
 public class DriveCommands {
     // drive constants
     private static final double DEADBAND = 0.1;
@@ -92,6 +94,26 @@ public class DriveCommands {
                                             : drive.getRotation().toRotation2d()));
                 },
                 drive);
+    }
+
+    public static Command driveForwardTest(Drive drive) {
+        return Commands.run(() -> {
+                ChassisSpeeds speeds = new ChassisSpeeds(
+                        1,
+                        1,
+                        0
+                );
+                drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation().toRotation2d()) );
+        }).withTimeout(2).andThen(
+                Commands.run(() -> {
+                        ChassisSpeeds speeds = new ChassisSpeeds(
+                        0,
+                        0,
+                        0
+                );
+                drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation().toRotation2d()) );
+                })
+        );
     }
 
     public static Command joystickDriveAtAngle(

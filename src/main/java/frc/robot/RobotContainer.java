@@ -53,7 +53,7 @@ public class RobotContainer {
         private final Drive drive;
         @SuppressWarnings("unused")
         private final Vision vision;
-        private final Elevator elevator;
+        //private final Elevator elevator;
 
         @SuppressWarnings("unused")
         private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
@@ -84,8 +84,8 @@ public class RobotContainer {
                                                 new VisionIOPhoton(camera0Name, robotToCamera0),
                                                 new VisionIOPhoton(camera1Name, robotToCamera1));
 
-                                elevator = new Elevator(
-                                                new ElevatorIOTalon());
+                                /*elevator = new Elevator(
+                                                new ElevatorIOTalon());*/
 
                                 break;
 
@@ -106,8 +106,8 @@ public class RobotContainer {
                                                 new VisionIOPhotonSim(camera1Name, robotToCamera1,
                                                                 drive::getPose));
 
-                                elevator = new Elevator(
-                                                new ElevatorIOSim());
+                                /*elevator = new Elevator(
+                                                new ElevatorIOSim());*/
                                 break;
 
                         default:
@@ -127,9 +127,9 @@ public class RobotContainer {
                                 }, new VisionIO() {
                                 });
 
-                                elevator = new Elevator(
+                                /*elevator = new Elevator(
                                                 new ElevatorIO() {
-                                                });
+                                                });*/
                                 break;
                 }
 
@@ -152,14 +152,16 @@ public class RobotContainer {
                 autoChooser.addOption(
                                 "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-                autoChooser.addOption(
+                autoChooser.addOption("Drive Forward Test", DriveCommands.driveForwardTest(drive));
+
+                /*autoChooser.addOption(
                                 "Elevator Test: Ground", elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
                 autoChooser.addOption(
                                 "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
                 autoChooser.addOption(
-                                "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
+                                "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));*/
 
-                autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive, elevator));
+                autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive));
 
                 // Configure the button bindings
                 configureButtonBindings();
@@ -215,14 +217,14 @@ public class RobotContainer {
                                                 () -> -controller.getLeftX(),
                                                 () -> Drive.getAngleToHub(drive.getPose())));
 
-                controller.R2().onTrue(
+                /*controller.R2().onTrue(
                                 elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
 
                 controller.R1().onTrue(
                                 elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
 
                 controller.L2().onTrue(
-                                elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
+                                elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));*/
         }
 
         /**

@@ -6,6 +6,10 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -42,12 +46,17 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   // Create Control requests
   private final VoltageOut voltageRequest = new VoltageOut(0.0);
-  private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
+
+  private final MotionMagicExpoVoltage positionVoltageRequest = new MotionMagicExpoVoltage(0.0);
   private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
 
   // Create Control requests for FOC torque and position control (Phoenix Pro)
-  private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
-  private final PositionTorqueCurrentFOC positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0);
+  private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0); // open loop
+
+  // closed loop:
+  // Turn uses Motion Magic Expo for Position,
+  // Drive uses Motion Magic Velocity for Velocity 
+  private final MotionMagicExpoTorqueCurrentFOC positionTorqueCurrentRequest = new MotionMagicExpoTorqueCurrentFOC(0.0);
   private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest = new VelocityTorqueCurrentFOC(0.0);
 
   private final Queue<Double> timestampQueue;
@@ -87,6 +96,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
     driveConfig.MotorOutput.Inverted = constants.DriveMotorInverted
         ? InvertedValue.Clockwise_Positive
         : InvertedValue.CounterClockwise_Positive;
