@@ -15,18 +15,29 @@ public class VisionIOPhoton implements VisionIO {
     protected final PhotonCamera camera;
     protected final Transform3d robotToCamera;
 
+    Set<Short> tagIds = new HashSet<>();
+    List<PoseObservation> poseObservations = new LinkedList<>();
+
+    public static final TargetObservation nullTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
+
     public VisionIOPhoton(String name, Transform3d robotToCamera) {
         this.camera = new PhotonCamera(name);
         this.robotToCamera = robotToCamera;
+
     }
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
         inputs.connected = camera.isConnected();
 
+        if (!inputs.connected) {
+            return; // skip processing if camera is not connected
+        }
+
         // get new camera observations
-        Set<Short> tagIds = new HashSet<>();
-        List<PoseObservation> poseObservations = new LinkedList<>();
+        tagIds.clear();
+        poseObservations.clear();
+        
         for (var result : camera.getAllUnreadResults()) {
             if (result.hasTargets()) {
                 inputs.latestTargetObservation = new TargetObservation(
@@ -34,7 +45,7 @@ public class VisionIOPhoton implements VisionIO {
                     Rotation2d.fromDegrees(result.getBestTarget().getPitch())
                 );
             } else {
-                inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
+                inputs.latestTargetObservation = nullTargetObservation;
             }
 
             if (result.multitagResult.isPresent()) { // Multitag result

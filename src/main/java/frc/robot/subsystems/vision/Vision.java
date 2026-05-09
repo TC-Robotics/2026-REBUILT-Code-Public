@@ -23,6 +23,18 @@ public class Vision extends SubsystemBase {
     private final VisionIOInputsAutoLogged[] inputs;
     private final Alert[] disconnectedAlerts;
 
+    // Init logging values (whole system)
+    List<Pose3d> allTagPoses = new LinkedList<>();
+    List<Pose3d> allRobotPoses = new LinkedList<>();
+    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+
+    // init logging (individual cameras)
+    List<Pose3d> tagPoses = new LinkedList<>();
+    List<Pose3d> robotPoses = new LinkedList<>();
+    List<Pose3d> robotPosesAccepted = new LinkedList<>();
+    List<Pose3d> robotPosesRejected = new LinkedList<>();
+
     public Vision(VisionConsumer consumer, VisionIO... io) {
         this.consumer = consumer;
         this.io = io;
@@ -44,25 +56,27 @@ public class Vision extends SubsystemBase {
     public void periodic() {
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
-            Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+            /*Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);*/
         }
 
-        // Init logging values
-        List<Pose3d> allTagPoses = new LinkedList<>();
-        List<Pose3d> allRobotPoses = new LinkedList<>();
-        List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-        List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+        allTagPoses.clear();
+        allRobotPoses.clear();
+        allRobotPosesAccepted.clear();
+        allRobotPosesRejected.clear();
 
         // Loop over cameras
         for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
             // update disconnected alerts
             disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
 
-            // init logging
-            List<Pose3d> tagPoses = new LinkedList<>();
-            List<Pose3d> robotPoses = new LinkedList<>();
-            List<Pose3d> robotPosesAccepted = new LinkedList<>();
-            List<Pose3d> robotPosesRejected = new LinkedList<>();
+            if (!inputs[cameraIndex].connected) {
+                continue; // skip processing for this camera if it's not connected
+            }
+
+            tagPoses.clear();
+            robotPoses.clear();
+            robotPosesAccepted.clear();
+            robotPosesRejected.clear();
 
             // add tag poses
             for (int tagId : inputs[cameraIndex].tagIds) {

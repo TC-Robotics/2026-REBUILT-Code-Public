@@ -28,10 +28,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 
-import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
-import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
-import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
-import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -51,12 +48,13 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
         // Subsystems
         private final Drive drive;
-        @SuppressWarnings("unused")
-        private final Vision vision;
-        //private final Elevator elevator;
 
         @SuppressWarnings("unused")
-        private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+        private final Vision vision;
+        // private final Elevator elevator;
+
+        // @SuppressWarnings("unused")
+        // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
         // Controller
         private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -84,8 +82,10 @@ public class RobotContainer {
                                                 new VisionIOPhoton(camera0Name, robotToCamera0),
                                                 new VisionIOPhoton(camera1Name, robotToCamera1));
 
-                                /*elevator = new Elevator(
-                                                new ElevatorIOTalon());*/
+                                /*
+                                 * elevator = new Elevator(
+                                 * new ElevatorIOTalon());
+                                 */
 
                                 break;
 
@@ -104,10 +104,16 @@ public class RobotContainer {
                                                 new VisionIOPhotonSim(camera0Name, robotToCamera0,
                                                                 drive::getPose),
                                                 new VisionIOPhotonSim(camera1Name, robotToCamera1,
+                                                                drive::getPose),
+                                                new VisionIOPhotonSim(camera2Name, robotToCamera2,
+                                                                drive::getPose),
+                                                new VisionIOPhotonSim(camera3Name, robotToCamera3,
                                                                 drive::getPose));
 
-                                /*elevator = new Elevator(
-                                                new ElevatorIOSim());*/
+                                /*
+                                 * elevator = new Elevator(
+                                 * new ElevatorIOSim());
+                                 */
                                 break;
 
                         default:
@@ -123,13 +129,23 @@ public class RobotContainer {
                                                 },
                                                 new ModuleIO() {
                                                 });
-                                vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
-                                }, new VisionIO() {
-                                });
+                                vision = new Vision(
+                                                drive::addVisionMeasurement,
+                                                new VisionIOPhoton(camera0Name, robotToCamera0) {
+                                                },
+                                                new VisionIOPhoton(camera1Name, robotToCamera1) {
+                                                },
+                                                new VisionIOPhoton(camera2Name, robotToCamera2) {
+                                                },
+                                                new VisionIOPhoton(camera3Name, robotToCamera3) {
+                                                }
+                                        );
 
-                                /*elevator = new Elevator(
-                                                new ElevatorIO() {
-                                                });*/
+                                /*
+                                 * elevator = new Elevator(
+                                 * new ElevatorIO() {
+                                 * });
+                                 */
                                 break;
                 }
 
@@ -154,12 +170,17 @@ public class RobotContainer {
 
                 autoChooser.addOption("Drive Forward Test", DriveCommands.driveForwardTest(drive));
 
-                /*autoChooser.addOption(
-                                "Elevator Test: Ground", elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
-                autoChooser.addOption(
-                                "Elevator Test: Mid", elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
-                autoChooser.addOption(
-                                "Elevator Test: High", elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));*/
+                /*
+                 * autoChooser.addOption(
+                 * "Elevator Test: Ground", elevator.goToSetpoint(() ->
+                 * Elevator.Setpoint.Ground));
+                 * autoChooser.addOption(
+                 * "Elevator Test: Mid", elevator.goToSetpoint(() ->
+                 * Elevator.Setpoint.MidScore));
+                 * autoChooser.addOption(
+                 * "Elevator Test: High", elevator.goToSetpoint(() ->
+                 * Elevator.Setpoint.HighScore));
+                 */
 
                 autoChooser.addDefaultOption("Competition Auto", Autos.compAuto(drive));
 
@@ -217,14 +238,16 @@ public class RobotContainer {
                                                 () -> -controller.getLeftX(),
                                                 () -> Drive.getAngleToHub(drive.getPose())));
 
-                /*controller.R2().onTrue(
-                                elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
-
-                controller.R1().onTrue(
-                                elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
-
-                controller.L2().onTrue(
-                                elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));*/
+                /*
+                 * controller.R2().onTrue(
+                 * elevator.goToSetpoint(() -> Elevator.Setpoint.HighScore));
+                 * 
+                 * controller.R1().onTrue(
+                 * elevator.goToSetpoint(() -> Elevator.Setpoint.MidScore));
+                 * 
+                 * controller.L2().onTrue(
+                 * elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
+                 */
         }
 
         /**

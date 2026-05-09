@@ -35,6 +35,7 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
 
     // Add sim camera
     var cameraProperties = new SimCameraProperties();
+    cameraProperties.setFPS(20);
     cameraSim = new PhotonCameraSim(camera, cameraProperties, aprilTagLayout);
     visionSim.addCamera(cameraSim, robotToCamera);
   }
