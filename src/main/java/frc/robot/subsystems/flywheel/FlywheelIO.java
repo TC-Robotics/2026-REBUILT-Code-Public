@@ -2,8 +2,6 @@ package frc.robot.subsystems.flywheel;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.units.AngularVelocityUnit;
-import edu.wpi.first.units.LinearVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 
 /** Hardware abstraction for flywheel control. */
