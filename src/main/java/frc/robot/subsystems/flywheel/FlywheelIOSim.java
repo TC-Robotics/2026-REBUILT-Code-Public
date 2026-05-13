@@ -4,6 +4,7 @@ import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.LinearVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 
+/** Placeholder simulation IO for the flywheel. */
 public class FlywheelIOSim implements FlywheelIO {
     @Override
     public void updateInputs(FlywheelIOInputs inputs) {

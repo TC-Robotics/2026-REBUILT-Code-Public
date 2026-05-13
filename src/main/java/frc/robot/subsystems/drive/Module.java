@@ -1,5 +1,7 @@
-// This Module class represents a single swerve drive module, handling its state and control.
-// It uses ModuleIO (which when this class is instantiated, is actually either the sim or a talonfx), and is used by the Drive class.
+/**
+ * Represents a single swerve module, owning its state and output control. The
+ * hardware-specific implementation is provided via {@link ModuleIO}.
+ */
 
 package frc.robot.subsystems.drive;
 
@@ -26,6 +28,9 @@ public class Module {
     private final Alert turnEncoderDisconnectedAlert;
     private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
+    /**
+     * Creates a module wrapper for a single corner.
+     */
     public Module(
             ModuleIO io,
             int index,
@@ -43,11 +48,12 @@ public class Module {
                 AlertType.kError);
     }
 
+    /** Updates inputs, odometry sample buffers, and hardware alerts. */
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
 
-        // Calculate positions for odometry
+    // Calculate positions for odometry
         int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
         odometryPositions = new SwerveModulePosition[sampleCount];
         for (int i = 0; i < sampleCount; i++) {

@@ -27,6 +27,10 @@ import java.util.function.DoubleSupplier;
  * devices using CANivore
  * time synchronization.
  */
+/**
+ * Background thread that batches Phoenix status signals for consistent
+ * odometry sampling.
+ */
 public class PhoenixOdometryThread extends Thread {
   private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering signals
   private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];

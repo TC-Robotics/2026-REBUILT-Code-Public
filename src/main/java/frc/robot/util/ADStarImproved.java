@@ -10,6 +10,9 @@ import com.pathplanner.lib.pathfinding.Pathfinder;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
 
+/**
+ * Placeholder pathfinder implementation; currently returns no paths.
+ */
 public class ADStarImproved implements Pathfinder {
     @Override
     public boolean isNewPathAvailable() {

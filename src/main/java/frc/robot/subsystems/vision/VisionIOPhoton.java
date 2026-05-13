@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
 
+/**
+ * PhotonVision-based IO implementation that reads camera results and converts
+ * them into pose observations.
+ */
 public class VisionIOPhoton implements VisionIO {
     protected final PhotonCamera camera;
     protected final Transform3d robotToCamera;
@@ -18,8 +22,12 @@ public class VisionIOPhoton implements VisionIO {
     Set<Short> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
 
+    /** Fallback observation when no target is visible. */
     public static final TargetObservation nullTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
 
+    /**
+     * Creates a PhotonVision IO instance for a named camera.
+     */
     public VisionIOPhoton(String name, Transform3d robotToCamera) {
         this.camera = new PhotonCamera(name);
         this.robotToCamera = robotToCamera;
@@ -34,7 +42,7 @@ public class VisionIOPhoton implements VisionIO {
             return; // skip processing if camera is not connected
         }
 
-        // get new camera observations
+    // get new camera observations
         tagIds.clear();
         poseObservations.clear();
         
@@ -105,13 +113,13 @@ public class VisionIOPhoton implements VisionIO {
             }
         }
 
-        // Save pose observations to inputs object
+    // Save pose observations to inputs object
         inputs.poseObservations = new PoseObservation[poseObservations.size()];
         for (int i = 0; i < poseObservations.size(); i++) {
             inputs.poseObservations[i] = poseObservations.get(i);
         }
 
-        // Save tag IDs to inputs object
+    // Save tag IDs to inputs object
         inputs.tagIds = new int[tagIds.size()];
         int i = 0;
         for (int id : tagIds) {

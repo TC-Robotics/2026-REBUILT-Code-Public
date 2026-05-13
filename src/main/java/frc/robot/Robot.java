@@ -18,8 +18,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends LoggedRobot {
+  /** Currently selected autonomous command (if any). */
   private Command m_autonomousCommand;
 
+  /** Owns subsystems, commands, and button bindings. */
   private final RobotContainer m_robotContainer;
 
   /**
@@ -35,7 +37,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
     Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
 
-    // Check if the current git working tree is dirty
+  // Check if the current git working tree is dirty
     switch (BuildConstants.DIRTY) {
       case 0:
         Logger.recordMetadata("GitDirty", "All changes committed");
@@ -48,8 +50,8 @@ public class Robot extends LoggedRobot {
         break;
     }
 
-    // Check whether we are simulating or running on a real robot, and configure
-    // logging based on that
+  // Check whether we are simulating or running on a real robot, and configure
+  // logging based on that
 
     switch (Constants.currentMode) {
       case REAL:
@@ -67,12 +69,11 @@ public class Robot extends LoggedRobot {
         break;
     }
 
-    // Start logging
+  // Start logging
     Logger.start();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
-    // and put our
-    // autonomous chooser on the dashboard.
+    // and put our autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
 

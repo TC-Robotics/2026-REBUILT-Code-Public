@@ -20,10 +20,12 @@ import edu.wpi.first.units.measure.Velocity;
 
 import com.ctre.phoenix6.CANBus;
 
+/** Tuning and geometry constants for the elevator mechanism. */
 public class ElevatorConstants {
 
     public static final CANBus kCANBus = new CANBus("rio");
 
+    /** Stator current limit to protect motors. */
     public static final Current kCurrentStatorLimit = Amps.of(120);
 
     // Slot 0 gains

@@ -17,6 +17,10 @@ import java.util.List;
 
 import org.littletonrobotics.junction.Logger;
 
+/**
+ * Vision subsystem that aggregates camera observations, filters them, and
+ * forwards accepted measurements to the drivetrain pose estimator.
+ */
 public class Vision extends SubsystemBase {
     private final VisionConsumer consumer;
     private final VisionIO[] io;
@@ -35,6 +39,9 @@ public class Vision extends SubsystemBase {
     List<Pose3d> robotPosesAccepted = new LinkedList<>();
     List<Pose3d> robotPosesRejected = new LinkedList<>();
 
+    /**
+     * Creates a vision subsystem with one or more IO implementations.
+     */
     public Vision(VisionConsumer consumer, VisionIO... io) {
         this.consumer = consumer;
         this.io = io;
@@ -149,7 +156,7 @@ public class Vision extends SubsystemBase {
             allRobotPosesAccepted.addAll(robotPosesAccepted);
             allRobotPosesRejected.addAll(robotPosesRejected);
         }
-        // Log summary data
+    // Log summary data
         Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
         Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
         Logger.recordOutput(
@@ -158,6 +165,7 @@ public class Vision extends SubsystemBase {
                 "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
     }
 
+    /** Callback for passing accepted vision measurements to the pose estimator. */
     @FunctionalInterface
     public static interface VisionConsumer {
         public void accept(

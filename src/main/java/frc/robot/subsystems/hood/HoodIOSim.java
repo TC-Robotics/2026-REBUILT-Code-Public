@@ -2,6 +2,7 @@ package frc.robot.subsystems.hood;
 
 import edu.wpi.first.units.measure.Angle;;
 
+/** Placeholder simulation IO for the hood. */
 public class HoodIOSim implements HoodIO {
     @Override
     public void updateInputs(HoodIOInputs inputs) {

@@ -66,11 +66,12 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, IO devices, and commands.
          */
         public RobotContainer() {
+                // Select IO implementations based on build mode.
                 switch (Constants.currentMode) {
                         case REAL:
-                                // Real robot, instantiate hardware IO implementations
+                                // Real robot, instantiate hardware IO implementations.
                                 // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
-                                // a CANcoder
+                                // a CANcoder.
                                 drive = new Drive(
                                                 new GyroIOPigeon2(),
                                                 new ModuleIOTalonFX(TunerConstants.FrontLeft),
@@ -90,7 +91,7 @@ public class RobotContainer {
                                 break;
 
                         case SIM:
-                                // Sim robot, instantiate physics sim IO implementations
+                                // Sim robot, instantiate physics sim IO implementations.
                                 drive = new Drive(
                                                 new GyroIO() {
                                                 },
@@ -98,7 +99,7 @@ public class RobotContainer {
                                                 new ModuleIOSim(TunerConstants.FrontRight),
                                                 new ModuleIOSim(TunerConstants.BackLeft),
                                                 new ModuleIOSim(TunerConstants.BackRight));
-                                // Sim robot, instantiate physics sim IO implementations
+                                // Sim robot, instantiate physics sim IO implementations.
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonSim(camera0Name, robotToCamera0,
@@ -117,7 +118,7 @@ public class RobotContainer {
                                 break;
 
                         default:
-                                // Replayed robot, disable IO implementations
+                                // Replayed robot, disable IO implementations and rely on log replay.
                                 drive = new Drive(
                                                 new GyroIO() {
                                                 },
@@ -197,7 +198,7 @@ public class RobotContainer {
          * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
          */
         private void configureButtonBindings() {
-                // Default command, normal field-relative drive
+                // Default command, normal field-relative drive.
                 drive.setDefaultCommand(
                                 DriveCommands.joystickDrive(
                                                 drive,
@@ -205,7 +206,7 @@ public class RobotContainer {
                                                 () -> -controller.getLeftX(),
                                                 () -> -controller.getRightX()));
 
-                // Lock to 0° when triangle button is held
+                // Lock to 0° when triangle button is held.
                 controller
                                 .triangle()
                                 .whileTrue(
@@ -215,10 +216,10 @@ public class RobotContainer {
                                                                 () -> -controller.getLeftX(),
                                                                 () -> Rotation3d.kZero));
 
-                // Switch to X pattern when cross button is pressed
+                // Switch to X pattern when cross button is pressed.
                 controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-                // Reset gyro to 0° when circle button is pressed
+                // Reset gyro to 0° when circle button is pressed.
                 controller
                                 .circle()
                                 .onTrue(
@@ -230,7 +231,7 @@ public class RobotContainer {
                                                                 drive)
                                                                 .ignoringDisable(true));
 
-                // Force the robot to face towards the hub
+                // Force the robot to face towards the hub.
                 controller.square().whileTrue(
                                 DriveCommands.joystickDriveAtAngle(
                                                 drive,

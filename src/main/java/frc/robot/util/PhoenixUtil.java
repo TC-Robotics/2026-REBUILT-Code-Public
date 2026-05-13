@@ -4,7 +4,9 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import java.util.function.Supplier;
 
+/** Utility helpers for configuring and refreshing Phoenix signals. */
 public class PhoenixUtil {
+    /** Retries a Phoenix configuration call up to the provided count. */
     public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
         for (int i = 0; i < maxAttempts; i++) {
             var error = command.get();

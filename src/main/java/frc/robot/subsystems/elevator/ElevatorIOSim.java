@@ -12,6 +12,10 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
+/**
+ * Simulation implementation that mirrors the real TalonFX IO but updates
+ * simulation state for unit testing and tuning.
+ */
 public class ElevatorIOSim extends ElevatorIOTalon {
 
     /* simulation */
@@ -37,6 +41,7 @@ public class ElevatorIOSim extends ElevatorIOTalon {
         super.updateInputs(inputs);
     }
 
+    /** Starts a fast simulation loop to improve PID realism. */
     private void startSimThread() {
         leaderMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
         followerMotor.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;

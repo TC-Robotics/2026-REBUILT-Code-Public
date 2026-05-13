@@ -3,6 +3,10 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.geometry.Rotation3d;
 import org.littletonrobotics.junction.AutoLog;
 
+/**
+ * Hardware abstraction for a swerve module. Implementations should populate
+ * {@link ModuleIOInputs} and apply outputs.
+ */
 public interface ModuleIO {
     @AutoLog
     public static class ModuleIOInputs {
@@ -26,22 +30,27 @@ public interface ModuleIO {
 
     }
 
+    /** Updates the inputs structure with the latest sensor values. */
     public default void updateInputs(ModuleIOInputs inputs) {
         // Default implementation does nothing
     }
 
+    /** Sets open-loop drive output (typically percent or volts depending on IO). */
     public default void setDriveOpenLoop(double output) {
         // Default implementation does nothing
     }
 
+    /** Sets open-loop steering output (typically percent or volts depending on IO). */
     public default void setTurnOpenLoop(double output) {
         // Default implementation does nothing
     }
 
+    /** Sets closed-loop drive velocity in radians/sec. */
     public default void setDriveVelocity(double velocityRadPerSec) {
         // Default implementation does nothing
     }
 
+    /** Sets closed-loop steering position. */
     public default void setTurnPosition(Rotation3d position) {
         // Default implementation does nothing
     }

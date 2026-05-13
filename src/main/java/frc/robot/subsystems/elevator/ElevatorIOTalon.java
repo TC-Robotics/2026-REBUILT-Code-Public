@@ -20,6 +20,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.*;
 import frc.robot.util.PhoenixUtil;
 
+/**
+ * TalonFX-based elevator implementation using Motion Magic with torque current
+ * control.
+ */
 public class ElevatorIOTalon implements ElevatorIO {
 
     /** Configs common across all motors. */
@@ -71,24 +75,24 @@ public class ElevatorIOTalon implements ElevatorIO {
                     motorInitialConfigs.MotorOutput.clone()
                             .withInverted(InvertedValue.CounterClockwise_Positive));
 
-    /* leader and follower motors */
+        /* leader and follower motors */
     private final CANBus kCANBus = ElevatorConstants.kCANBus;
     protected final TalonFX leaderMotor = new TalonFX(0, kCANBus);
     protected final TalonFX followerMotor = new TalonFX(1, kCANBus);
 
-    /* device status signals */
+        /* device status signals */
     private final StatusSignal<Angle> leaderMotorPosition = leaderMotor.getPosition(false);
     private final StatusSignal<AngularVelocity> leaderMotorVelocity = leaderMotor.getVelocity(false);
     private final StatusSignal<Current> leaderMotorTorqueCurrent = leaderMotor.getTorqueCurrent(false);
 
-    /* controls used by the leader motors */
+        /* controls used by the leader motors */
     private final MotionMagicExpoTorqueCurrentFOC setpointRequest = new MotionMagicExpoTorqueCurrentFOC(0);
     private final DutyCycleOut manualRequest = new DutyCycleOut(0);
     private final DutyCycleOut calibrationRequest = new DutyCycleOut(-0.1)
             .withIgnoreHardwareLimits(true)
             .withIgnoreSoftwareLimits(true);
 
-
+        /** Configures motors and registers status signals. */
     public ElevatorIOTalon() {
         for (int i = 0; i < ElevatorConstants.kNumConfigAttempts; ++i) {
             var status = leaderMotor.getConfigurator().apply(leaderMotorConfigs);

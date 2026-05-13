@@ -16,6 +16,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+/**
+ * Elevator subsystem that manages position control, calibration, and manual
+ * drive.
+ */
 public class Elevator extends SubsystemBase {
 
         private final ElevatorIO io;
@@ -56,6 +60,9 @@ public class Elevator extends SubsystemBase {
                         .append(new LoggedMechanismLigament2d("leaderMotor", ElevatorConstants.kMinHeight.in(Meters),
                                         90));
 
+        /**
+         * Creates an elevator subsystem with the specified IO implementation.
+         */
         public Elevator(ElevatorIO io) {
                 this.io = io;
                 Logger.processInputs("Elevator", inputs);

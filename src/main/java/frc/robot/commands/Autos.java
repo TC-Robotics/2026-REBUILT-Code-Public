@@ -18,28 +18,41 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import frc.robot.Constants;
 
+/**
+ * Factory methods for autonomous command sequences.
+ */
 public final class Autos {
   /** Example static factory for an autonomous command. */
   public static Command exampleAuto(ExampleSubsystem subsystem) {
     return Commands.sequence(subsystem.exampleMethodCommand(), new ExampleCommand(subsystem));
   }
 
+  /**
+   * Competition autonomous sequence that loads all Choreo paths in order and
+   * follows them back-to-back with short delays for smoothing.
+   */
   public static Command compAuto(Drive drive) {
     try {
       File[] choreoTrajs = new File("./src/main/deploy/choreo").listFiles((dir, name) -> name.endsWith(".traj"));
       Arrays.sort(choreoTrajs);
 
+      // Build the full command sequence from all trajectory files.
       SequentialCommandGroup mainAutoCommands = new SequentialCommandGroup();
 
       Command[] follows = new Command[choreoTrajs.length];
       for (int i = 0; i < choreoTrajs.length; i++) {
         if (i == 0) {
-          follows[0] = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[0].getName().replaceAll("\\.traj", "")), Constants.constraints)
-          .andThen(new WaitCommand(0.2));
+          // First path is pathfound to the starting waypoint.
+          follows[0] = AutoBuilder.pathfindThenFollowPath(
+              PathPlannerPath.fromChoreoTrajectory(choreoTrajs[0].getName().replaceAll("\\.traj", "")),
+              Constants.constraints)
+              .andThen(new WaitCommand(0.2));
         }
         else {
-          follows[i] = AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", "")))
-          .andThen(new WaitCommand(0.2));
+          // Subsequent paths can be followed directly.
+          follows[i] = AutoBuilder.followPath(
+              PathPlannerPath.fromChoreoTrajectory(choreoTrajs[i].getName().replaceAll("\\.traj", "")))
+              .andThen(new WaitCommand(0.2));
         }
       }
 

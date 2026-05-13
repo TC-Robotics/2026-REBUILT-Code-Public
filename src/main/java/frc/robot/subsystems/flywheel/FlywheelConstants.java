@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Velocity;
 
+/** Tuning and hardware constants for the flywheel. */
 public class FlywheelConstants {
     public static final CANBus kCANBus = new CANBus("rio");
 

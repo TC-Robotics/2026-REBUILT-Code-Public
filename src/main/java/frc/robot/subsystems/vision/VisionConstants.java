@@ -12,6 +12,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
+/** Constants for AprilTag layout, camera transforms, and filtering. */
 public class VisionConstants {
 
     // AprilTag layout

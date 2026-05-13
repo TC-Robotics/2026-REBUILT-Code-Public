@@ -12,10 +12,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOInputsAutoLogged;
 
+/** Hood subsystem controlling the shooter hood angle. */
 public class Hood extends SubsystemBase {
     private final HoodIO io;
     private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
 
+    /** Creates a hood subsystem with the given IO implementation. */
     public Hood(HoodIO io) {
         this.io = io;
         Logger.processInputs("Hood", inputs);
@@ -28,6 +30,7 @@ public class Hood extends SubsystemBase {
 
     }
 
+    /** Holds the hood at the current angle using closed-loop control. */
     public Command holdPosition() {
         return runOnce(() -> io.setHoodAngle(Angle.ofBaseUnits(inputs.hoodAngle, Degrees)));
     }

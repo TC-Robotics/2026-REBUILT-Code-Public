@@ -50,17 +50,21 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 
 import frc.robot.util.LocalADStarAK;
 
-// Swerve drive subsystem. Where all the main fun happens.
-
+/**
+ * Swerve drive subsystem that owns the drivetrain hardware, odometry, and
+ * motion commands. This is the single entry point for commanding and observing
+ * the drivetrain state.
+ */
 public class Drive extends SubsystemBase {
+    /** Odometry update rate based on CAN FD availability. */
     static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
             ? 250.0
             : 100.0;
 
-    // Used for creating a circle around the robot in which everything is contained,
-    // fulfilling all safety and boundary requirements.
-    // Useful for angular speed calculations, as it makes sure we don't exceed the
-    // max speed at any point on the robot.
+    /**
+     * Radius of a circle that encloses the drivetrain footprint. Used to convert
+     * linear limits into angular speed limits safely at any point on the robot.
+     */
     public static final double DRIVE_BASE_RADIUS = Math.max(
             Math.max(
                     Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
@@ -69,10 +73,14 @@ public class Drive extends SubsystemBase {
                     Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
                     Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-    // PathPlanner config constants
+    /** PathPlanner configuration constants. */
     private static final double ROBOT_MASS_KG = 74.088;
     private static final double ROBOT_MOI = 6.883;
     private static final double WHEEL_COF = 1.2;
+    /**
+     * Full robot characterization used by PathPlanner for feedforward and
+     * pathing behavior.
+     */
     private static final RobotConfig PP_CONFIG = new RobotConfig(
             ROBOT_MASS_KG,
             ROBOT_MOI,
@@ -86,15 +94,18 @@ public class Drive extends SubsystemBase {
                     1),
             getModuleTranslations());
 
+    /** Prevents odometry updates while sensor inputs are being read. */
     static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    /** Module order is front-left, front-right, back-left, back-right. */
+    private final Module[] modules = new Module[4];
     private final SysIdRoutine sysId;
     private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+    /** Latest yaw-only gyro rotation used for odometry integration. */
     private Rotation3d rawGyroRotation = Rotation3d.kZero;
     private SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[] {
             new SwerveModulePosition(),
@@ -102,12 +113,16 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition(),
             new SwerveModulePosition()
     };
+    /** Pose estimator that fuses gyro, wheel odometry, and vision measurements. */
     private final SwerveDrivePoseEstimator3d poseEstimator = new SwerveDrivePoseEstimator3d(
             kinematics,
             rawGyroRotation,
             lastModulePositions,
             new Pose3d());
 
+    /**
+     * Creates a drive subsystem using the provided IO implementations.
+     */
     public Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
@@ -120,13 +135,13 @@ public class Drive extends SubsystemBase {
         modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
         modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
 
-        // Usage reporting for swerve template
+    // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
-        // Start odometry thread
+    // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
 
-        // Configure AutoBuilder for PathPlanner
+    // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
                 this::getPose2d,
                 (Pose2d p) -> setPose(p),
@@ -148,7 +163,7 @@ public class Drive extends SubsystemBase {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
                 });
 
-        sysId = new SysIdRoutine(
+    sysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
                         null,
                         null,
@@ -248,7 +263,7 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    /** Stops the drive. */
+    /** Stops the drive by commanding zero chassis speeds. */
     public void stop() {
         runVelocity(new ChassisSpeeds());
     }
@@ -332,12 +347,13 @@ public class Drive extends SubsystemBase {
         return output;
     }
 
-    /** Returns the current odometry pose. */
+    /** Returns the current estimated robot pose in 3D (used for vision). */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose3d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
 
+    /** Returns the current estimated robot pose in 2D for pathing/field use. */
     public Pose2d getPose2d() {
         return poseEstimator.getEstimatedPosition().toPose2d();
     }
@@ -356,7 +372,7 @@ public class Drive extends SubsystemBase {
         setPose(new Pose3d(pose.getX(), pose.getY(), 0.0, new Rotation3d(0.0, 0.0, pose.getRotation().getRadians())));
     }
 
-    /** Adds a new timestamped vision measurement. */
+    /** Adds a new timestamped vision measurement to the pose estimator. */
     public void addVisionMeasurement(
             Pose3d visionRobotPoseMeters,
             double timestampSeconds,
@@ -375,6 +391,9 @@ public class Drive extends SubsystemBase {
         return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
     }
 
+    /**
+     * Computes the yaw rotation that points from the robot to the hub.
+     */
     public static Rotation3d getAngleToHub(Pose3d robotPose) {
         Pose3d hubPose = DriveConstants.getHubPose();
 
@@ -384,7 +403,7 @@ public class Drive extends SubsystemBase {
         return new Rotation3d(0.0, 0.0, Math.atan2(dy, dx));
     }
 
-    /** Returns an array of module translations. */
+    /** Returns an array of module translations (one per corner). */
     public static Translation2d[] getModuleTranslations() {
         return new Translation2d[] {
                 new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),

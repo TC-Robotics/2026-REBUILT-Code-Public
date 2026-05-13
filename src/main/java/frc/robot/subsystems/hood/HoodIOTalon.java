@@ -26,6 +26,7 @@ import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.util.PhoenixUtil;
 
 
+/** TalonFX-backed IO for hood angle control. */
 public class HoodIOTalon implements HoodIO {
     private static final TalonFXConfiguration motorInitialConfigs = new TalonFXConfiguration()
         .withMotorOutput(

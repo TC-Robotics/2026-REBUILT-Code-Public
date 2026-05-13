@@ -17,11 +17,14 @@ import edu.wpi.first.wpilibj.RobotBase;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  /** Driver station/controller ports and operator-facing constants. */
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
 
+  /** Default mode for simulation when not running on real hardware. */
   public static final Mode simMode = Mode.SIM;
+  /** Actual runtime mode based on hardware detection. */
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
   public static enum Mode {
@@ -30,5 +33,6 @@ public final class Constants {
     REPLAY
   }
 
+  /** Global path constraints used by PathPlanner autos. */
   public static final PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0);
 }

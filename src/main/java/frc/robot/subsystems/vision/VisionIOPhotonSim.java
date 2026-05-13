@@ -13,7 +13,9 @@ import org.photonvision.simulation.VisionSystemSim;
 public class VisionIOPhotonSim extends VisionIOPhoton {
   private static VisionSystemSim visionSim;
 
+  /** Supplies the current simulated robot pose. */
   private final Supplier<Pose3d> poseSupplier;
+  /** PhotonVision simulation camera instance. */
   private final PhotonCameraSim cameraSim;
 
   /**

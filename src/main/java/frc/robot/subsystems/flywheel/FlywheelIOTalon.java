@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.hood.HoodConstants;
 import frc.robot.util.PhoenixUtil;
 
+/** TalonFX-backed IO implementation for the flywheel. */
 public class FlywheelIOTalon implements FlywheelIO {
     private static final TalonFXConfiguration motorInitialConfigs = new TalonFXConfiguration()
             .withMotorOutput(

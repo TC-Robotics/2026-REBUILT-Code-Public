@@ -29,8 +29,12 @@ import java.util.function.Supplier;
 
 import com.pathplanner.lib.util.DriveFeedforwards;
 
+/**
+ * Static factory methods for drive-related commands and characterization
+ * routines.
+ */
 public class DriveCommands {
-    // drive constants
+        // drive constants
     private static final double DEADBAND = 0.1;
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
@@ -41,10 +45,13 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25;
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05;
 
-    private DriveCommands() {
-    }
+        private DriveCommands() {
+        }
 
-    // Converts joystick x/y inputs into a 3D pose (only 2D is actually used though)
+        /**
+         * Converts joystick X/Y inputs into a translation vector (2D is used, 3D is
+         * stored for convenience).
+         */
     private static Translation3d getLinearVelocityFromJoysticks(double x, double y) {
         // deadband the controller input so it's not affected by stick drift
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
@@ -60,10 +67,16 @@ public class DriveCommands {
                 .transformBy(new Transform3d(linearMagnitude, 0.0, 0.0, Rotation3d.kZero))
                 .getTranslation();
     }
-    // For a PS5 controller, the xSupplier comes from the joystick rotation forwards and backwards (forwards is Negative Y / backwards is Positive Y)
-    // the ySupplier comes from the joystick rotation left and right (left is Negative X / right is Positive X)
-    // the omegaSupplier comes from the right joystick rotation left and right (left is Negative X / right is Positive X)
-    // it's weird I know
+
+    /**
+     * Field-relative drive using a PS5 controller layout.
+     *
+     * <p>
+     * For a PS5 controller, the xSupplier comes from the joystick rotation
+     * forwards/backwards (forwards is negative Y), the ySupplier comes from the
+     * joystick rotation left/right (left is negative X), and the omegaSupplier
+     * comes from the right joystick rotation left/right.
+     */
     public static Command joystickDrive(
             Drive drive,
             DoubleSupplier xSupplier, // Left joystick, backwards and forwards
@@ -96,6 +109,10 @@ public class DriveCommands {
                 drive);
     }
 
+        /**
+         * Simple timed drive test for quickly verifying directionality and
+         * field-relative conversion.
+         */
     public static Command driveForwardTest(Drive drive) {
         return Commands.run(() -> {
                 ChassisSpeeds speeds = new ChassisSpeeds(
@@ -116,6 +133,9 @@ public class DriveCommands {
         );
     }
 
+        /**
+         * Field-relative drive while holding a target heading using a profiled PID.
+         */
     public static Command joystickDriveAtAngle(
             Drive drive,
             DoubleSupplier xSupplier,
@@ -158,6 +178,10 @@ public class DriveCommands {
                         () -> angleController.reset(drive.getRotation().getZ()));
     }
 
+        /**
+         * Runs a simple feedforward characterization by ramping voltage and logging
+         * measured velocity.
+         */
     public static Command feedforwardCharacterization(Drive drive) {
         List<Double> velocitySamples = new LinkedList<>();
         List<Double> voltageSamples = new LinkedList<>();
@@ -172,7 +196,7 @@ public class DriveCommands {
                 Commands.run(() -> drive.runCharacterization(0.0), drive)
                         .withTimeout(FF_START_DELAY),
                 Commands.runOnce(timer::restart),
-                Commands.run(
+                                Commands.run(
                         () -> {
                             double voltage = timer.get() * FF_RAMP_RATE;
                             drive.runCharacterization(voltage);
@@ -182,6 +206,7 @@ public class DriveCommands {
                         drive)
                         .finallyDo(
                                 () -> {
+                                                                        // Linear regression to estimate kS and kV.
                                     int n = velocitySamples.size();
                                     double sumX = 0.0, sumY = 0.0, sumXY = 0.0, sumX2 = 0.0;
                                     for (int i = 0; i < n; i++) {
@@ -200,6 +225,10 @@ public class DriveCommands {
                                 }));
     }
 
+        /**
+         * Characterizes wheel radius by rotating in place and measuring gyro vs wheel
+         * travel.
+         */
     public static Command wheelRadiusCharacterization(Drive drive) {
         SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
         WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
@@ -228,6 +257,7 @@ public class DriveCommands {
                                 })
                                 .finallyDo(
                                         () -> {
+                                            // Estimate wheel radius from gyro delta and wheel travel.
                                             double[] positions = drive.getWheelRadiusCharacterizationPositions();
                                             double wheelDelta = 0.0;
                                             for (int i = 0; i < 4; i++) {
