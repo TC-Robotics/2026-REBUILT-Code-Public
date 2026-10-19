@@ -1,7 +1,6 @@
 package frc.robot.subsystems.flywheel;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
 /**
  * Flywheel subsystem wrapper. Currently holds IO implementations and input
